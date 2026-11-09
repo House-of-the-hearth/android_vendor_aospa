@@ -21,3 +21,6 @@ allow system_server zygote_tmpfs:file rw_file_perms;
 
 # PIH
 add_service(system_server, pih_manager_service);
+
+# Ignore attempts by system_server to read vendor_default_prop
+dontaudit system_server vendor_default_prop:file r_file_perms;
