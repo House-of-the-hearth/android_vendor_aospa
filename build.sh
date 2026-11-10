@@ -251,13 +251,17 @@ elif [ "${KEY_MAPPINGS}" ]; then
         fi
     done
 
-    echo -e "${CLR_BLD_BLU}Signing target files apks${CLR_RST}"
-    sign_target_files_apks -o -d $KEY_MAPPINGS \
-        $EXTRA_SIGN_ARGS \
-        "$OUT"/obj/PACKAGING/target_files_intermediates/aospa_$DEVICE-target_files.zip \
-        aospa-$AOSPA_VERSION-signed-target_files.zip
+    if [ ! -f "aospa-$AOSPA_VERSION-signed-target_files.zip" ] || [ "$OUT/obj/PACKAGING/target_files_intermediates/aospa_$DEVICE-target_files.zip" -nt "aospa-$AOSPA_VERSION-signed-target_files.zip" ]; then
+        echo -e "${CLR_BLD_BLU}Signing target files apks${CLR_RST}"
+        sign_target_files_apks -o -d $KEY_MAPPINGS \
+            $EXTRA_SIGN_ARGS \
+            "$OUT"/obj/PACKAGING/target_files_intermediates/aospa_$DEVICE-target_files.zip \
+            aospa-$AOSPA_VERSION-signed-target_files.zip
 
-    checkExit
+        checkExit
+    else
+        echo -e "${CLR_BLD_BLU}Using existing signed target files: aospa-$AOSPA_VERSION-signed-target_files.zip${CLR_RST}"
+    fi
 
     echo -e "${CLR_BLD_BLU}Generating signed install package${CLR_RST}"
     ota_from_target_files -k $KEY_MAPPINGS/releasekey \
