@@ -238,8 +238,22 @@ elif [ "${KEY_MAPPINGS}" ]; then
 
     checkExit
 
+    EXTRA_SIGN_ARGS=""
+    if [ -f "$KEY_MAPPINGS/avb_vbmeta.pem" ]; then
+        EXTRA_SIGN_ARGS+=" --avb_vbmeta_key $KEY_MAPPINGS/avb_vbmeta.pem --avb_vbmeta_algorithm SHA256_RSA4096"
+    fi
+    if [ -f "$KEY_MAPPINGS/avb_vbmeta_system.pem" ]; then
+        EXTRA_SIGN_ARGS+=" --avb_vbmeta_system_key $KEY_MAPPINGS/avb_vbmeta_system.pem --avb_vbmeta_system_algorithm SHA256_RSA2048"
+    fi
+    for cert in bluetooth nfc cts_uicc_2021; do
+        if [ -f "$KEY_MAPPINGS/$cert.pk8" ]; then
+            EXTRA_SIGN_ARGS+=" -k build/make/target/product/security/$cert=$KEY_MAPPINGS/$cert"
+        fi
+    done
+
     echo -e "${CLR_BLD_BLU}Signing target files apks${CLR_RST}"
     sign_target_files_apks -o -d $KEY_MAPPINGS \
+        $EXTRA_SIGN_ARGS \
         "$OUT"/obj/PACKAGING/target_files_intermediates/aospa_$DEVICE-target_files.zip \
         aospa-$AOSPA_VERSION-signed-target_files.zip
 
@@ -252,6 +266,9 @@ elif [ "${KEY_MAPPINGS}" ]; then
         aospa-$AOSPA_VERSION.zip
 
     checkExit
+
+    cp -f aospa-$AOSPA_VERSION.zip "$OUT"/aospa-$AOSPA_VERSION.zip
+    echo "Package Complete: $OUT/aospa-$AOSPA_VERSION.zip"
 
     if [ "$DELTA_TARGET_FILES" ]; then
         # die if base target doesn't exist
